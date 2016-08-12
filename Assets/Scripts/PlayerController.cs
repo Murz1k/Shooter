@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(ConfigurableJoint))]
@@ -9,7 +10,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float speed = 5f;
     [SerializeField]
-    private float lookSensitivity = 8f;
+    private float mouseSensitivity = 15f;
 
     [SerializeField]
     private float thrusterForce = 1000f;
@@ -19,6 +20,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float thrusterFuelRegenSpeed = 0.3f;
     private float thrusterFuelAmount = 1f;
+
+    private byte _maxBullets = 200;
+
+    private byte _bulletCount;
 
     public float GetThrusterFuelAmount()
     {
@@ -35,15 +40,22 @@ public class PlayerController : MonoBehaviour
     private float jointMaxForce = 40f;
 
     // Component caching
+
+    private PlayerShooting _gun;
     private PlayerMotor motor;
     private ConfigurableJoint joint;
-    private Animator animator;
+    private Animator _animator;
+    private Text _BulletText;
 
     void Start()
     {
         motor = GetComponent<PlayerMotor>();
         joint = GetComponent<ConfigurableJoint>();
-        animator = GetComponent<Animator>();
+        _animator = GetComponent<Animator>();
+        _gun = GetComponentInChildren<PlayerShooting>();
+        _BulletText = GameObject.Find("BulletText").GetComponent<Text>();
+        _bulletCount = _maxBullets;
+        _BulletText.text = _bulletCount.ToString();
 
         SetJointSettings(jointSpring);
     }
@@ -51,7 +63,16 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         //if (PauseMenu.IsOn)
-            //return;
+        //return;
+
+
+        if (!_animator.GetBool("Dead"))
+        {
+            bool fire = Input.GetButton("Fire1");
+            if (Input.GetKeyDown(KeyCode.R))
+                _bulletCount = _maxBullets;
+            Fire(fire);
+        }
 
         //Setting target position for spring
         //This makes the physics act right when it comes to
@@ -77,7 +98,7 @@ public class PlayerController : MonoBehaviour
         Vector3 _velocity = (_movHorizontal + _movVertical) * speed;
 
         // Animate movement
-        animator.SetFloat("ForwardVelocity", _zMov);
+        _animator.SetFloat("ForwardVelocity", _zMov);
 
         //Apply movement
         motor.Move(_velocity);
@@ -85,7 +106,7 @@ public class PlayerController : MonoBehaviour
         //Calculate rotation as a 3D vector (turning around)
         float _yRot = Input.GetAxisRaw("Mouse X");
 
-        Vector3 _rotation = new Vector3(0f, _yRot, 0f) * lookSensitivity;
+        Vector3 _rotation = new Vector3(0f, _yRot, 0f) * mouseSensitivity;
 
         //Apply rotation
         motor.Rotate(_rotation);
@@ -93,7 +114,7 @@ public class PlayerController : MonoBehaviour
         //Calculate camera rotation as a 3D vector (turning around)
         float _xRot = Input.GetAxisRaw("Mouse Y");
 
-        float _cameraRotationX = _xRot * lookSensitivity;
+        float _cameraRotationX = _xRot * mouseSensitivity;
 
         //Apply camera rotation
         motor.RotateCamera(_cameraRotationX);
@@ -130,6 +151,18 @@ public class PlayerController : MonoBehaviour
             positionSpring = _jointSpring,
             maximumForce = jointMaxForce
         };
+    }
+
+    void Fire(bool IsFire)
+    {
+        _animator.SetBool("Fire", IsFire);
+        if (IsFire && _bulletCount != 0)
+        {
+            _gun.StartShoot();
+            _bulletCount--;
+            _BulletText.text = _bulletCount.ToString();
+            print(_bulletCount);
+        }
     }
 
 }

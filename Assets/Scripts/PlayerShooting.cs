@@ -13,7 +13,7 @@ public class PlayerShooting : MonoBehaviour
     float timer;                                    // Таймер для определения, когда стрелять.
     private Ray shootRay;                                   // Луч из оружия, который выпущен вперед.
     private RaycastHit shootHit;                            // Луч поал, получаем информацию
-    int shootableMask;                              // Индекс слоя в котором попадаем во врагов
+    //int shootableMask;                              // Индекс слоя в котором попадаем во врагов
     private ParticleSystem _gunParticles;                    // Эффект выстрела
     private LineRenderer _gunLine;                           // Линия выстрела
     private AudioSource _gunAudio;                           // Звук выстрела
@@ -25,7 +25,7 @@ public class PlayerShooting : MonoBehaviour
     void Awake()
     {
         // Берем индекс слоя Shootable
-        shootableMask = LayerMask.GetMask("Shootable");
+        //shootableMask = LayerMask.GetMask("Shootable");
 
         _gunParticles = GetComponent<ParticleSystem>();
         _gunLine = GetComponent<LineRenderer>();
